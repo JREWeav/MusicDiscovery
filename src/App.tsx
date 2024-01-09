@@ -1,7 +1,7 @@
-import AlbumComponent from "./components/album-component/AlbumComponent.tsx";
+import AlbumGrid from "./components/album-grid-component/AlbumGridComponent.tsx";
 
 function App() {
-  return <AlbumComponent></AlbumComponent>;
+  return <AlbumGrid></AlbumGrid>;
 }
 
 export default App;
