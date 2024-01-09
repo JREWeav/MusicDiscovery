@@ -13,8 +13,13 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
+    "@types/node": "^20.10.7",
+    "@types/qs": "^6.9.11",
     "axios": "^1.6.3",
+    "buffer": "^6.0.3",
+    "dotenv": "^16.3.1",
     "framer-motion": "^10.16.16",
+    "qs": "^6.11.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-form-hook": "^0.0.1",
@@ -22,6 +27,8 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/node": "^20.10.7",
+    "@types/qs": "^6.9.11",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
@@ -32,5 +39,10 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
     "vite": "^5.0.8"
-  }
+  },
+  "description": "A tool created by myself to help me practice React.",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

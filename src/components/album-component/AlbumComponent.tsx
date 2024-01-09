@@ -14,8 +14,11 @@ import { useEffect, useState } from "react";
 import apiClient from "../../services/api-client.ts";
 
 interface SearchResult {
-  next: string;
+  albums: {
+next: string;
   items: Album[];
+  }
+  
 }
 
 interface Album {
@@ -54,8 +57,8 @@ function AlbumComponent() {
         signal: controller.signal,
       })
       .then((res) => {
-        setNextURL(res.data.next);
-        setAlbums(res.data.items);
+        setNextURL(res.data.albums.next);
+        setAlbums(res.data.albums.items);
         setLoading(false);
       })
       .catch((err) => {
