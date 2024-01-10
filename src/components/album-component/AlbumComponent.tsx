@@ -9,7 +9,6 @@ import {
   StatNumber,
 } from "@chakra-ui/react";
 import { Album } from "../album-grid-component/AlbumGridComponent.tsx";
-import { string } from "zod";
 
 interface Props {
   album: Album;
@@ -31,11 +30,15 @@ function AlbumComponent({ album }: Props) {
           <StatLabel>
             {album.artists.map((artist, index) =>
               index < album.artists.length - 1
-                ? artist.name + ", "
+                ? index < 5
+                  ? artist.name + ", "
+                  : null
                 : artist.name
             )}
+            {""}
+            {album.artists.length > 5 ? "..." : ""}
           </StatLabel>
-          <StatNumber>{album.name}</StatNumber>
+          <StatNumber>{album?.name}</StatNumber>
           <StatHelpText>
             {album.album_type.toUpperCase() +
               " - " +
