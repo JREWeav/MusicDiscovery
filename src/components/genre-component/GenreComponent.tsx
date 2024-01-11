@@ -1,13 +1,26 @@
 import { useState, useEffect } from "react";
 import apiClient from "../../services/api-client";
-import { Stack, Button } from "@chakra-ui/react";
+import { Stack, Button, IconButton } from "@chakra-ui/react";
+import { CloseIcon } from "@chakra-ui/icons";
 import "./GenreComponent.css";
 
 interface Result {
   genres: string[];
 }
 
-function GenreComponent() {
+interface Props {
+  selectedGenres: string[];
+  updateSearch: () => void;
+  addGenre: (arg0: string) => void;
+  removeGenre: (arg0: string) => void;
+}
+
+function GenreComponent({
+  selectedGenres,
+  addGenre,
+  removeGenre,
+  updateSearch,
+}: Props) {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState("[]");
   const [genres, setGenres] = useState<string[]>([]);
@@ -48,12 +61,35 @@ function GenreComponent() {
           overflowY={"scroll"}
           h={"100%"}
           w={"auto"}
+          pt={"20px"}
         >
-          {genres.map((genre) => (
-            <Button key={genre} size={"xs"}>
-              {genre}
-            </Button>
-          ))}
+          {genres.map((genre) =>
+            selectedGenres.includes(genre) ? (
+              <Button key={genre} size={"xs"}>
+                {genre}
+                <IconButton
+                  aria-label="Remove Genre"
+                  icon={<CloseIcon />}
+                  onClick={() => {
+                    removeGenre(genre);
+                    updateSearch();
+                  }}
+                  size={"xs"}
+                />
+              </Button>
+            ) : (
+              <Button
+                key={genre}
+                size={"xs"}
+                onClick={() => {
+                  addGenre(genre);
+                  updateSearch();
+                }}
+              >
+                {genre}
+              </Button>
+            )
+          )}
         </Stack>
       )}
     </>
