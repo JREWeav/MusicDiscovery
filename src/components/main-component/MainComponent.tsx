@@ -2,10 +2,11 @@ import { Box, Flex, Input, Stack } from "@chakra-ui/react";
 import AlbumGrid from "../album-grid-component/AlbumGridComponent.tsx";
 import GenreComponent from "../genre-component/GenreComponent.tsx";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Album } from "../../services/album-service.ts";
+import { Album } from "../../services/album-interface.ts";
 import apiClient from "../../services/api-client.ts";
+import { Artist } from "../../services/artist-interface.ts";
 
-interface SearchResult {
+interface albumSearchResult {
   albums: {
     next: string;
     items: Album[];
@@ -23,29 +24,18 @@ function MainComponent() {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const getURL = (url: string, nextPage: boolean) => {
     const controller = new AbortController();
-    setLoading(true);
-    const genreString =
-      selectedGenres.length > 0
-        ? "%2520genre:" + selectedGenres.join("%2520genre:")
-        : "";
+    setAlbums([]);
+    setLoading(nextPage ? false : true);
 
-    const searchURL =
-      search !== ""
-        ? "https://api.spotify.com/v1/search?q=".concat(
-            search,
-            genreString,
-            "&type=album"
-          )
-        : "https://api.spotify.com/v1/search?q=tag%3Anew&type=album";
     apiClient
-      .get<SearchResult>(searchURL, {
+      .get<albumSearchResult>(url, {
         signal: controller.signal,
       })
       .then((res) => {
         setNextURL(res.data.albums.next);
-        setAlbums(res.data.albums.items);
+        addGenres(res.data.albums.items, true);
         setLoading(false);
       })
       .catch((err) => {
@@ -55,17 +45,25 @@ function MainComponent() {
       });
 
     return () => controller.abort();
-  }, [selectedGenres, search]);
+  };
+
+  useEffect(() => {
+    const searchURL =
+      search !== ""
+        ? "https://api.spotify.com/v1/search?q=".concat(search, "&type=album")
+        : "https://api.spotify.com/v1/search?q=tag%3Anew&type=album";
+    getURL(searchURL, false);
+  }, [search]);
 
   const getNextPage = (url: string) => {
     const controller = new AbortController();
     apiClient
-      .get<SearchResult>(url, {
+      .get<albumSearchResult>(url, {
         signal: controller.signal,
       })
       .then((res) => {
         setNextURL(res.data.albums.next);
-        setAlbums([...albums, ...res.data.albums.items]);
+        addGenres(res.data.albums.items, false);
       })
       .catch((err) => {
         console.log(err);
@@ -73,29 +71,30 @@ function MainComponent() {
       });
   };
 
-  const getURL = () => {
-    setLoading(true);
+  const addGenres = (newAlbums: Album[], reset: boolean) => {
     const controller = new AbortController();
-    const genreString = "%2520genre:" + selectedGenres.join("%2520genre:");
-    const searchURL = "https://api.spotify.com/v1/search?q=".concat(
-      search,
-      genreString,
-      "&type=album"
-    );
-    apiClient
-      .get<SearchResult>(searchURL, {
-        signal: controller.signal,
-      })
-      .then((res) => {
-        setNextURL(res.data.albums.next);
-        setAlbums(res.data.albums.items);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setError(err.message);
-        setLoading(false);
-      });
+    for (const newAlbum of newAlbums) {
+      apiClient
+        .get<Artist>(
+          "https://api.spotify.com/v1/artists/" + newAlbum.artists[0].id,
+          {
+            signal: controller.signal,
+          }
+        )
+        .then((res) => {
+          newAlbum.artists[0].genres = res.data.genres.map((genre) =>
+            genre.split(" ").join("-").toLowerCase()
+          );
+          console.log;
+          console.log(newAlbum);
+          newAlbum.artists[0].images = res.data.images;
+        })
+        .catch((err) => {
+          console.log("Error on getting artist: " + err);
+        });
+    }
+    console.log("Made it here!");
+    reset ? setAlbums(newAlbums) : setAlbums([...albums, ...newAlbums]);
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -126,7 +125,6 @@ function MainComponent() {
           <Flex>
             <Box boxSize={"8%"} justifySelf={"center"} h={"100%"}>
               <GenreComponent
-                updateSearch={getURL}
                 selectedGenres={selectedGenres}
                 addGenre={(g: string) =>
                   setSelectedGenres([...selectedGenres, g])
@@ -143,6 +141,7 @@ function MainComponent() {
                 isLoading={isLoading}
                 albums={albums}
                 nextURL={nextURL}
+                selectedGenres={selectedGenres}
                 getNextPage={getNextPage}
               ></AlbumGrid>
             </Box>

@@ -10,17 +10,11 @@ interface Result {
 
 interface Props {
   selectedGenres: string[];
-  updateSearch: () => void;
   addGenre: (arg0: string) => void;
   removeGenre: (arg0: string) => void;
 }
 
-function GenreComponent({
-  selectedGenres,
-  addGenre,
-  removeGenre,
-  updateSearch,
-}: Props) {
+function GenreComponent({ selectedGenres, addGenre, removeGenre }: Props) {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState("[]");
   const [genres, setGenres] = useState<string[]>([]);
@@ -72,7 +66,6 @@ function GenreComponent({
                   icon={<CloseIcon />}
                   onClick={() => {
                     removeGenre(genre);
-                    updateSearch();
                   }}
                   size={"xs"}
                 />
@@ -83,7 +76,6 @@ function GenreComponent({
                 size={"xs"}
                 onClick={() => {
                   addGenre(genre);
-                  updateSearch();
                 }}
               >
                 {genre}

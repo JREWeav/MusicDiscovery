@@ -8,7 +8,7 @@ import {
   StatLabel,
   StatNumber,
 } from "@chakra-ui/react";
-import { Album } from "../../services/album-service";
+import { Album } from "../../services/album-interface";
 
 interface Props {
   album: Album;

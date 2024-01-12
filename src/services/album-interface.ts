@@ -1,3 +1,6 @@
+import { Image } from "./image-interface.ts";
+import { Artist } from "./artist-interface.ts";
+
 export interface Album {
   album_type: string;
   total_tracks: number;
@@ -8,17 +11,4 @@ export interface Album {
   };
   images: Image[];
   artists: Artist[];
-}
-
-interface Image {
-  url: string;
-  height: number;
-  width: number;
-}
-
-interface Artist {
-  name: string;
-  external_urls: {
-    spotify: string;
-  };
 }
