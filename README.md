@@ -1,16 +1,18 @@
 # MusicFindr
 
-A tool created by myself to help me practice React.
+A tool created by myself to help me practice React. 
+
+This tool uses the Spotify API to search for music and then filter by genres.
 
 ## Tools used:
-
 Vite
 React + TypeScript
-React Icons
-React Form Hook
+ChakraUI
 Axios
 QS
 DotEnv
-ChakraUI
 
-Spotify API
+This project uses the Spotify API
+
+## Current build available at:
+https://music-findr.vercel.app
