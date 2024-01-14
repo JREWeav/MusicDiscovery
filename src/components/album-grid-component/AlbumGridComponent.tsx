@@ -1,7 +1,7 @@
 import { Album } from "../../services/album-interface.ts";
 import { Flex, SimpleGrid, Spinner } from "@chakra-ui/react";
 import AlbumComponent from "../album-component/AlbumComponent.tsx";
-import AlbumComponentBlank from "../album-component/AlbumComponentBlank.tsx";
+//import AlbumComponentBlank from "../album-component/AlbumComponentBlank.tsx";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 interface Props {
@@ -67,7 +67,7 @@ function AlbumGrid({
                 ) : null
               )}
 
-            {hasMore && (
+            {/* {hasMore && (
               <>
                 <AlbumComponentBlank></AlbumComponentBlank>
                 <AlbumComponentBlank></AlbumComponentBlank>
@@ -75,7 +75,7 @@ function AlbumGrid({
                 <AlbumComponentBlank></AlbumComponentBlank>
                 <AlbumComponentBlank></AlbumComponentBlank>
               </>
-            )}
+            )} */}
           </SimpleGrid>
         </InfiniteScroll>
       )}
