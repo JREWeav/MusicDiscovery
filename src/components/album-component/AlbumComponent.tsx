@@ -24,7 +24,7 @@ function AlbumComponent({ album }: Props) {
         <Image
           m={0}
           src={album.images[0].url}
-          alt="Green double couch with wooden legs"
+          alt={album.name}
           borderRadius="lg"
           onClick={() => window.open(album.external_urls.spotify)}
           cursor={"pointer"}

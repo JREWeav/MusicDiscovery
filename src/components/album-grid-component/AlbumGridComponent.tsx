@@ -1,11 +1,12 @@
 import { Album } from "../../services/album-interface.ts";
 import { Flex, SimpleGrid, Spinner } from "@chakra-ui/react";
-import { useState } from "react";
 import AlbumComponent from "../album-component/AlbumComponent.tsx";
+import AlbumComponentBlank from "../album-component/AlbumComponentBlank.tsx";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 interface Props {
   isLoading: boolean;
+  hasMore: boolean;
   albums: Album[];
   nextURL: string;
   selectedGenres: string[];
@@ -14,13 +15,12 @@ interface Props {
 
 function AlbumGrid({
   isLoading,
+  hasMore,
   albums,
   nextURL,
   selectedGenres,
   getNextPage,
 }: Props) {
-  const [hasMore, setHasMore] = useState(true);
-
   return (
     <>
       {isLoading && (
@@ -37,9 +37,7 @@ function AlbumGrid({
       {!isLoading && albums.length > 0 && (
         <InfiniteScroll
           dataLength={albums.length}
-          next={() =>
-            nextURL != null ? getNextPage(nextURL) : setHasMore(false)
-          }
+          next={() => getNextPage(nextURL)}
           hasMore={hasMore}
           loader={<h3>Nothing Here!</h3>}
         >
@@ -68,6 +66,16 @@ function AlbumGrid({
                   ></AlbumComponent>
                 ) : null
               )}
+
+            {hasMore && (
+              <>
+                <AlbumComponentBlank></AlbumComponentBlank>
+                <AlbumComponentBlank></AlbumComponentBlank>
+                <AlbumComponentBlank></AlbumComponentBlank>
+                <AlbumComponentBlank></AlbumComponentBlank>
+                <AlbumComponentBlank></AlbumComponentBlank>
+              </>
+            )}
           </SimpleGrid>
         </InfiniteScroll>
       )}

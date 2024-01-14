@@ -1,4 +1,13 @@
-import { Box, Flex, Input, Stack } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  FormControl,
+  Input,
+  Stack,
+  Switch,
+  useColorMode,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import AlbumGrid from "../album-grid-component/AlbumGridComponent.tsx";
 import GenreComponent from "../genre-component/GenreComponent.tsx";
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -13,6 +22,16 @@ interface albumSearchResult {
   };
 }
 
+/* 
+TODO: 
+  * Add AlbumComponentBlank as a Placeholder for unloaded data
+  * Make new data load when the page is not scrolled down
+  * Maybe make database for genres?
+  * Make selected genres go to top
+  * Make genres go to top if window is too small
+  * Add filter features
+*/
+
 function MainComponent() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [search, setSearch] = useState("");
@@ -20,8 +39,11 @@ function MainComponent() {
   const searchBar = useRef<HTMLInputElement>(null);
 
   const [isLoading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
   const [nextURL, setNextURL] = useState("");
   const [albums, setAlbums] = useState<Album[]>([]);
+
+  const { colorMode, toggleColorMode } = useColorMode();
 
   const getURL = async (
     url: string,
@@ -29,20 +51,22 @@ function MainComponent() {
     nextPage: boolean
   ) => {
     setLoading(!nextPage);
-
     apiClient
       .get<albumSearchResult>(url, {
         signal: controller.signal,
       })
       .then(async (res) => {
+        res.data.albums.next !== null ? setHasMore(true) : setHasMore(false);
         setNextURL(res.data.albums.next);
         setAlbums(await addArtistData(res.data.albums.items, !nextPage));
         setLoading(false);
+        return () => console.log("Data loaded!");
       })
       .catch((err) => {
         console.log(err);
         setLoading(false);
       });
+    return () => controller.abort();
   };
 
   useEffect(() => {
@@ -89,22 +113,35 @@ function MainComponent() {
     }
   };
 
+  const bgColor = useColorModeValue("#FFFFFF", "#1A202C");
+
   return (
     <>
       <Stack>
-        <Box w={"100%"} h={"10%"} zIndex={"1000000"} bg={"white"} pos={"fixed"}>
-          <form onSubmit={handleSubmit}>
+        <Box w={"100%"} h={"10%"} zIndex={"1000000"} bg={bgColor} pos={"fixed"}>
+          <FormControl
+            onSubmit={handleSubmit}
+            display={"flex"}
+            alignItems={"center"}
+            pl={"10%"}
+            pr={"5%"}
+          >
             <Input
               placeholder="Search for album..."
-              size="md"
+              size="lg"
               w={"95%"}
               my={"30px"}
               mx={"30px"}
               id="search"
               type="text"
               ref={searchBar}
-            />{" "}
-          </form>
+            />
+            <Switch
+              size="lg"
+              isChecked={colorMode === "dark" ? true : false}
+              onChange={toggleColorMode}
+            />
+          </FormControl>
         </Box>
         <Box h={"100%"} w={"100%"} pt={"90px"}>
           <Flex>
@@ -124,6 +161,7 @@ function MainComponent() {
             <Box boxSize={"92%"} mx={"auto"}>
               <AlbumGrid
                 isLoading={isLoading}
+                hasMore={hasMore}
                 albums={albums}
                 nextURL={nextURL}
                 selectedGenres={selectedGenres}
