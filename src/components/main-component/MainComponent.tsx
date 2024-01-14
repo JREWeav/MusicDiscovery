@@ -119,29 +119,30 @@ function MainComponent() {
     <>
       <Stack>
         <Box w={"100%"} h={"10%"} zIndex={"1000000"} bg={bgColor} pos={"fixed"}>
-          <FormControl
-            onSubmit={handleSubmit}
-            display={"flex"}
-            alignItems={"center"}
-            pl={"10%"}
-            pr={"5%"}
-          >
-            <Input
-              placeholder="Search for album..."
-              size="lg"
-              w={"95%"}
-              my={"30px"}
-              mx={"30px"}
-              id="search"
-              type="text"
-              ref={searchBar}
-            />
-            <Switch
-              size="lg"
-              isChecked={colorMode === "dark" ? true : false}
-              onChange={toggleColorMode}
-            />
-          </FormControl>
+          <form onSubmit={handleSubmit}>
+            <FormControl
+              display={"flex"}
+              alignItems={"center"}
+              pl={"10%"}
+              pr={"5%"}
+            >
+              <Input
+                placeholder="Search for album..."
+                size="lg"
+                w={"95%"}
+                my={"30px"}
+                mx={"30px"}
+                id="search"
+                type="text"
+                ref={searchBar}
+              />
+              <Switch
+                size="lg"
+                isChecked={colorMode === "dark" ? true : false}
+                onChange={toggleColorMode}
+              />
+            </FormControl>
+          </form>
         </Box>
         <Box h={"100%"} w={"100%"} pt={"90px"}>
           <Flex>
