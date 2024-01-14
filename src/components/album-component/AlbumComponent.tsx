@@ -1,7 +1,10 @@
 import {
+  Avatar,
+  Box,
   Card,
   CardBody,
   CardFooter,
+  HStack,
   Image,
   Stat,
   StatHelpText,
@@ -29,31 +32,46 @@ function AlbumComponent({ album }: Props) {
       </CardBody>
       <CardFooter>
         <Stat>
-          <StatLabel>
-            {album.artists.map((artist, index) =>
-              index < album.artists.length - 1 ? (
-                index < 5 ? (
-                  <a
-                    href={artist.external_urls.spotify}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    key={artist.name}
-                  >
-                    {artist.name},{" "}
-                  </a>
-                ) : null
-              ) : (
-                <a
-                  href={artist.external_urls.spotify}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {artist.name}
-                </a>
-              )
-            )}
-            {""}
-            {album.artists.length > 5 ? "..." : ""}
+          <StatLabel alignItems={"center"}>
+            <HStack>
+              <Avatar
+                name={album.artists[0].name}
+                src={album.artists[0].images[0].url}
+                size={"md"}
+                onClick={() =>
+                  window.open(album.artists[0].external_urls.spotify)
+                }
+                cursor={"pointer"}
+              />
+              <Box>
+                {album.artists.map((artist, index) =>
+                  index < album.artists.length - 1 ? (
+                    index < 5 ? (
+                      <a
+                        href={artist.external_urls.spotify}
+                        id={artist.id}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        key={artist.name}
+                      >
+                        {artist.name},{" "}
+                      </a>
+                    ) : null
+                  ) : (
+                    <a
+                      href={artist.external_urls.spotify}
+                      id={artist.id}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {artist.name}
+                    </a>
+                  )
+                )}
+                {""}
+                {album.artists.length > 5 ? "..." : ""}
+              </Box>
+            </HStack>
           </StatLabel>
           <StatNumber>
             <a

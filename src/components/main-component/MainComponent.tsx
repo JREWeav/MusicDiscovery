@@ -22,59 +22,43 @@ function MainComponent() {
   const [isLoading, setLoading] = useState(true);
   const [nextURL, setNextURL] = useState("");
   const [albums, setAlbums] = useState<Album[]>([]);
-  const [error, setError] = useState("");
 
-  const getURL = (url: string, nextPage: boolean) => {
-    const controller = new AbortController();
-    setAlbums([]);
-    setLoading(nextPage ? false : true);
+  const getURL = async (
+    url: string,
+    controller: AbortController,
+    nextPage: boolean
+  ) => {
+    setLoading(!nextPage);
 
     apiClient
       .get<albumSearchResult>(url, {
         signal: controller.signal,
       })
-      .then((res) => {
+      .then(async (res) => {
         setNextURL(res.data.albums.next);
-        addGenres(res.data.albums.items, true);
+        setAlbums(await addArtistData(res.data.albums.items, !nextPage));
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message);
-        console.log(error);
+        console.log(err);
         setLoading(false);
       });
-
-    return () => controller.abort();
   };
 
   useEffect(() => {
+    const controller = new AbortController();
     const searchURL =
       search !== ""
         ? "https://api.spotify.com/v1/search?q=".concat(search, "&type=album")
         : "https://api.spotify.com/v1/search?q=tag%3Anew&type=album";
-    getURL(searchURL, false);
+    getURL(searchURL, controller, false);
+    return () => controller.abort();
   }, [search]);
 
-  const getNextPage = (url: string) => {
-    const controller = new AbortController();
-    apiClient
-      .get<albumSearchResult>(url, {
-        signal: controller.signal,
-      })
-      .then((res) => {
-        setNextURL(res.data.albums.next);
-        addGenres(res.data.albums.items, false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setError(err.message);
-      });
-  };
-
-  const addGenres = (newAlbums: Album[], reset: boolean) => {
+  const addArtistData = async (newAlbums: Album[], reset: boolean) => {
     const controller = new AbortController();
     for (const newAlbum of newAlbums) {
-      apiClient
+      await apiClient
         .get<Artist>(
           "https://api.spotify.com/v1/artists/" + newAlbum.artists[0].id,
           {
@@ -82,19 +66,20 @@ function MainComponent() {
           }
         )
         .then((res) => {
+          newAlbum.artists[0].images = res.data.images;
           newAlbum.artists[0].genres = res.data.genres.map((genre) =>
             genre.split(" ").join("-").toLowerCase()
           );
-          console.log;
-          console.log(newAlbum);
-          newAlbum.artists[0].images = res.data.images;
         })
         .catch((err) => {
           console.log("Error on getting artist: " + err);
         });
     }
-    console.log("Made it here!");
-    reset ? setAlbums(newAlbums) : setAlbums([...albums, ...newAlbums]);
+    if (reset) {
+      return newAlbums;
+    } else {
+      return [...albums, ...newAlbums];
+    }
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -142,7 +127,10 @@ function MainComponent() {
                 albums={albums}
                 nextURL={nextURL}
                 selectedGenres={selectedGenres}
-                getNextPage={getNextPage}
+                getNextPage={() => {
+                  const controller = new AbortController();
+                  getURL(nextURL, controller, true);
+                }}
               ></AlbumGrid>
             </Box>
           </Flex>

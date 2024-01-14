@@ -16,7 +16,6 @@ interface Props {
 
 function GenreComponent({ selectedGenres, addGenre, removeGenre }: Props) {
   const [isLoading, setLoading] = useState(true);
-  const [error, setError] = useState("[]");
   const [genres, setGenres] = useState<string[]>([]);
 
   useEffect(() => {
@@ -35,8 +34,6 @@ function GenreComponent({ selectedGenres, addGenre, removeGenre }: Props) {
       })
       .catch((err) => {
         console.log(err);
-        setError(err.message);
-        console.log(error);
         setLoading(false);
       });
 
