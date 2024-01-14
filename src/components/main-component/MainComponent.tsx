@@ -26,13 +26,14 @@ interface albumSearchResult {
 TODO: 
   * Add AlbumComponentBlank as a Placeholder for unloaded data
   * Make new data load when the page is not scrolled down
-  * Maybe make database for genres?
   * Make selected genres go to top
   * Make genres go to top if window is too small
   * Add filter features
+  * Batch search artists
 */
 
 function MainComponent() {
+  const [availableGenres, setAvailableGenres] = useState<string[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [search, setSearch] = useState("");
 
@@ -81,6 +82,7 @@ function MainComponent() {
 
   const addArtistData = async (newAlbums: Album[], reset: boolean) => {
     const controller = new AbortController();
+    let tempGenres: string[] = [];
     for (const newAlbum of newAlbums) {
       await apiClient
         .get<Artist>(
@@ -91,17 +93,27 @@ function MainComponent() {
         )
         .then((res) => {
           newAlbum.artists[0].images = res.data.images;
-          newAlbum.artists[0].genres = res.data.genres.map((genre) =>
-            genre.split(" ").join("-").toLowerCase()
-          );
+          newAlbum.artists[0].genres = res.data.genres;
+          tempGenres = [...tempGenres, ...res.data.genres];
         })
         .catch((err) => {
           console.log("Error on getting artist: " + err);
         });
     }
     if (reset) {
+      setAvailableGenres(
+        tempGenres
+          .filter((genre, index) => tempGenres.indexOf(genre) === index)
+          .sort()
+      );
       return newAlbums;
     } else {
+      const allGenres = [...availableGenres, ...tempGenres];
+      setAvailableGenres(
+        allGenres
+          .filter((genre, index) => allGenres.indexOf(genre) === index)
+          .sort()
+      );
       return [...albums, ...newAlbums];
     }
   };
@@ -148,7 +160,9 @@ function MainComponent() {
           <Flex>
             <Box boxSize={"8%"} justifySelf={"center"} h={"100%"}>
               <GenreComponent
+                availableGenres={availableGenres}
                 selectedGenres={selectedGenres}
+                isLoading={isLoading}
                 addGenre={(g: string) =>
                   setSelectedGenres([...selectedGenres, g])
                 }

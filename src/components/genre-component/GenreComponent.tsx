@@ -1,45 +1,22 @@
-import { useState, useEffect } from "react";
-import apiClient from "../../services/api-client";
 import { Stack, Button, IconButton } from "@chakra-ui/react";
 import { CloseIcon } from "@chakra-ui/icons";
 import "./GenreComponent.css";
 
-interface Result {
-  genres: string[];
-}
-
 interface Props {
+  availableGenres: string[];
   selectedGenres: string[];
+  isLoading: boolean;
   addGenre: (arg0: string) => void;
   removeGenre: (arg0: string) => void;
 }
 
-function GenreComponent({ selectedGenres, addGenre, removeGenre }: Props) {
-  const [isLoading, setLoading] = useState(true);
-  const [genres, setGenres] = useState<string[]>([]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    apiClient
-      .get<Result>(
-        "https://api.spotify.com/v1/recommendations/available-genre-seeds",
-        {
-          signal: controller.signal,
-        }
-      )
-      .then((res) => {
-        setGenres(res.data.genres);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-      });
-
-    return () => controller.abort();
-  }, []);
-
+function GenreComponent({
+  availableGenres,
+  isLoading,
+  selectedGenres,
+  addGenre,
+  removeGenre,
+}: Props) {
   return (
     <>
       {!isLoading && (
@@ -54,7 +31,7 @@ function GenreComponent({ selectedGenres, addGenre, removeGenre }: Props) {
           w={"auto"}
           pt={"20px"}
         >
-          {genres.map((genre) =>
+          {availableGenres.map((genre) =>
             selectedGenres.includes(genre) ? (
               <Button key={genre} size={"xs"}>
                 {genre}
