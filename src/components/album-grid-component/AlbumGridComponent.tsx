@@ -1,5 +1,5 @@
 import { Album } from "../../services/album-interface.ts";
-import { Flex, SimpleGrid, Spinner } from "@chakra-ui/react";
+import { Box, Flex, Progress, SimpleGrid, Spinner } from "@chakra-ui/react";
 import AlbumComponent from "../album-component/AlbumComponent.tsx";
 //import AlbumComponentBlank from "../album-component/AlbumComponentBlank.tsx";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -39,9 +39,28 @@ function AlbumGrid({
           dataLength={albums.length}
           next={() => getNextPage(nextURL)}
           hasMore={hasMore}
-          loader={<h3>Nothing Here!</h3>}
+          loader={
+            <Box
+              width={"auto"}
+              height={"auto"}
+              mt={"10px"}
+              display={"flex"}
+              justifyContent={"center"}
+            >
+              <Progress
+                size="md"
+                width={"40%"}
+                borderRadius={"2rem"}
+                isIndeterminate
+              />
+            </Box>
+          }
         >
-          <SimpleGrid minChildWidth="300px" spacing="20px">
+          <SimpleGrid
+            minChildWidth="300px"
+            spacing="20px"
+            justifyItems={"center"}
+          >
             {selectedGenres.length > 0 &&
               albums.map((album) =>
                 album != undefined &&

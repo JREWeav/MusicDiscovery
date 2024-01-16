@@ -1,6 +1,5 @@
-import { Stack, Button, IconButton } from "@chakra-ui/react";
+import { Stack, Button, IconButton, Box } from "@chakra-ui/react";
 import { CloseIcon } from "@chakra-ui/icons";
-import "./GenreComponent.css";
 
 interface Props {
   availableGenres: string[];
@@ -20,43 +19,40 @@ function GenreComponent({
   return (
     <>
       {!isLoading && (
-        <Stack
-          className="removeScrollbar"
-          spacing={4}
-          direction="column"
-          align="center"
-          pos={"fixed"}
-          overflowY={"scroll"}
-          h={"100%"}
-          w={"auto"}
-          pt={"20px"}
-        >
-          {availableGenres.map((genre) =>
-            selectedGenres.includes(genre) ? (
-              <Button key={genre} size={"xs"}>
-                {genre}
-                <IconButton
-                  aria-label="Remove Genre"
-                  icon={<CloseIcon />}
-                  onClick={() => {
-                    removeGenre(genre);
-                  }}
+        <Box width={"fit-content"} height={"auto"}>
+          <Stack className="removeScrollbar" spacing={4} direction="row">
+            {availableGenres.map((genre) =>
+              selectedGenres.includes(genre) ? (
+                <Button
+                  key={genre}
                   size={"xs"}
-                />
-              </Button>
-            ) : (
-              <Button
-                key={genre}
-                size={"xs"}
-                onClick={() => {
-                  addGenre(genre);
-                }}
-              >
-                {genre}
-              </Button>
-            )
-          )}
-        </Stack>
+                  width={"fit-content"}
+                  minW={"fit-content"}
+                >
+                  {genre}
+                  <IconButton
+                    aria-label="Remove Genre"
+                    icon={<CloseIcon />}
+                    onClick={() => {
+                      removeGenre(genre);
+                    }}
+                    size={"xs"}
+                  />
+                </Button>
+              ) : (
+                <Button
+                  key={genre}
+                  size={"xs"}
+                  onClick={() => {
+                    addGenre(genre);
+                  }}
+                >
+                  {genre}
+                </Button>
+              )
+            )}
+          </Stack>
+        </Box>
       )}
     </>
   );
