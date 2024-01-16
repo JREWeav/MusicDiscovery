@@ -25,6 +25,7 @@
     "react-dom": "^18.2.0",
     "react-form-hook": "^0.0.1",
     "react-icons": "^4.12.0",
+    "react-indiana-drag-scroll": "^2.2.0",
     "react-infinite-scroll-component": "^6.1.0",
     "react-remove-scroll-bar": "^2.3.4",
     "use-state-with-callback": "^3.0.2",

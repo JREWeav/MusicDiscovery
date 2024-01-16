@@ -1,10 +1,9 @@
 import {
   Box,
-  Flex,
   FormControl,
   Input,
-  Stack,
   Switch,
+  VStack,
   useColorMode,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -14,6 +13,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { Album } from "../../services/album-interface.ts";
 import apiClient from "../../services/api-client.ts";
 import { Artist } from "../../services/artist-interface.ts";
+import ScrollContainer from "react-indiana-drag-scroll";
 
 interface albumSearchResult {
   albums: {
@@ -22,9 +22,14 @@ interface albumSearchResult {
   };
 }
 
+interface artistSearchResult {
+  artists: Artist[];
+}
+
 /* 
 TODO: 
   * Add AlbumComponentBlank as a Placeholder for unloaded data
+  * Redo how genres are displayed
   * Make new data load when the page is not scrolled down
   * Make selected genres go to top
   * Make genres go to top if window is too small
@@ -83,23 +88,28 @@ function MainComponent() {
   const addArtistData = async (newAlbums: Album[], reset: boolean) => {
     const controller = new AbortController();
     let tempGenres: string[] = [];
+    const tempArtists: string[] = [];
     for (const newAlbum of newAlbums) {
-      await apiClient
-        .get<Artist>(
-          "https://api.spotify.com/v1/artists/" + newAlbum.artists[0].id,
-          {
-            signal: controller.signal,
-          }
-        )
-        .then((res) => {
-          newAlbum.artists[0].images = res.data.images;
-          newAlbum.artists[0].genres = res.data.genres;
-          tempGenres = [...tempGenres, ...res.data.genres];
-        })
-        .catch((err) => {
-          console.log("Error on getting artist: " + err);
-        });
+      tempArtists.push(newAlbum.artists[0].id);
     }
+    await apiClient
+      .get<artistSearchResult>(
+        "https://api.spotify.com/v1/artists?ids=" + tempArtists.join(","),
+        {
+          signal: controller.signal,
+        }
+      )
+      .then((res) => {
+        for (let i = 0; i < newAlbums.length; i++) {
+          console.log(res.data.artists[i].genres);
+          newAlbums[i].artists[0].images = res.data.artists[i].images;
+          newAlbums[i].artists[0].genres = res.data.artists[i].genres;
+          tempGenres = [...tempGenres, ...res.data.artists[i].genres];
+        }
+      })
+      .catch((err) => {
+        console.log("Error on getting artist: " + err);
+      });
     if (reset) {
       setAvailableGenres(
         tempGenres
@@ -129,66 +139,85 @@ function MainComponent() {
 
   return (
     <>
-      <Stack>
-        <Box w={"100%"} h={"10%"} zIndex={"1000000"} bg={bgColor} pos={"fixed"}>
-          <form onSubmit={handleSubmit}>
-            <FormControl
-              display={"flex"}
-              alignItems={"center"}
-              pl={"10%"}
-              pr={"5%"}
-            >
-              <Input
-                placeholder="Search for album..."
-                size="lg"
-                w={"95%"}
-                my={"30px"}
-                mx={"30px"}
-                id="search"
-                type="text"
-                ref={searchBar}
-              />
-              <Switch
-                size="lg"
-                isChecked={colorMode === "dark" ? true : false}
-                onChange={toggleColorMode}
-              />
-            </FormControl>
-          </form>
-        </Box>
-        <Box h={"100%"} w={"100%"} pt={"90px"}>
-          <Flex>
-            <Box boxSize={"8%"} justifySelf={"center"} h={"100%"}>
+      <VStack>
+        <Box
+          w={"90%"}
+          h={"auto"}
+          zIndex={"1000000"}
+          bg={bgColor}
+          pos={"fixed"}
+          pt={"20px"}
+          mb={"10px"}
+        >
+          <Box pb={"10px"}>
+            <form onSubmit={handleSubmit}>
+              <FormControl display={"flex"} alignItems={"center"}>
+                <Input
+                  placeholder="Search for album..."
+                  size="lg"
+                  mr={"20px"}
+                  id="search"
+                  type="text"
+                  ref={searchBar}
+                />
+                <Switch
+                  size="lg"
+                  isChecked={colorMode === "dark" ? true : false}
+                  onChange={toggleColorMode}
+                />
+              </FormControl>
+            </form>
+          </Box>
+          <Box
+            zIndex={"100000"}
+            bg={bgColor}
+            display={"flex"}
+            alignItems={"center"}
+            justifyItems={"center"}
+            pb={"10px"}
+          >
+            <ScrollContainer vertical={false}>
               <GenreComponent
                 availableGenres={availableGenres}
                 selectedGenres={selectedGenres}
                 isLoading={isLoading}
-                addGenre={(g: string) =>
-                  setSelectedGenres([...selectedGenres, g])
-                }
-                removeGenre={(g: string) =>
-                  setSelectedGenres(
-                    selectedGenres.filter((genre) => genre !== g)
-                  )
-                }
-              ></GenreComponent>
-            </Box>
-            <Box boxSize={"92%"} mx={"auto"}>
-              <AlbumGrid
-                isLoading={isLoading}
-                hasMore={hasMore}
-                albums={albums}
-                nextURL={nextURL}
-                selectedGenres={selectedGenres}
-                getNextPage={() => {
-                  const controller = new AbortController();
-                  getURL(nextURL, controller, true);
+                addGenre={(g: string) => {
+                  setAvailableGenres([
+                    g,
+                    ...availableGenres.filter((genre) => genre !== g),
+                  ]);
+                  setSelectedGenres([...selectedGenres, g]);
                 }}
-              ></AlbumGrid>
-            </Box>
-          </Flex>
+                removeGenre={(g: string) => {
+                  const tempGenres = selectedGenres.filter(
+                    (genre) => genre !== g
+                  );
+                  setAvailableGenres([
+                    ...tempGenres,
+                    ...availableGenres
+                      .filter((genre) => !tempGenres.includes(genre))
+                      .sort(),
+                  ]);
+                  setSelectedGenres(tempGenres);
+                }}
+              ></GenreComponent>
+            </ScrollContainer>
+          </Box>
         </Box>
-      </Stack>
+        <Box h={"100%"} w={"90%"} pt={"140px"}>
+          <AlbumGrid
+            isLoading={isLoading}
+            hasMore={hasMore}
+            albums={albums}
+            nextURL={nextURL}
+            selectedGenres={selectedGenres}
+            getNextPage={() => {
+              const controller = new AbortController();
+              getURL(nextURL, controller, true);
+            }}
+          ></AlbumGrid>
+        </Box>
+      </VStack>
     </>
   );
 }
