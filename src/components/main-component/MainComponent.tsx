@@ -1,19 +1,10 @@
-import {
-  Box,
-  FormControl,
-  Input,
-  Switch,
-  VStack,
-  useColorMode,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Box, VStack, useColorModeValue } from "@chakra-ui/react";
 import AlbumGrid from "../album-grid-component/AlbumGridComponent.tsx";
-import GenreComponent from "../genre-component/GenreComponent.tsx";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import MenuComponent from "../menu-component/MenuComponent.tsx";
+import { useEffect, useState } from "react";
 import { Album } from "../../services/album-interface.ts";
 import apiClient from "../../services/api-client.ts";
 import { Artist } from "../../services/artist-interface.ts";
-import ScrollContainer from "react-indiana-drag-scroll";
 
 interface albumSearchResult {
   albums: {
@@ -29,12 +20,8 @@ interface artistSearchResult {
 /* 
 TODO: 
   * Add AlbumComponentBlank as a Placeholder for unloaded data
-  * Redo how genres are displayed
   * Make new data load when the page is not scrolled down
-  * Make selected genres go to top
-  * Make genres go to top if window is too small
   * Add filter features
-  * Batch search artists
 */
 
 function MainComponent() {
@@ -42,14 +29,10 @@ function MainComponent() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [search, setSearch] = useState("");
 
-  const searchBar = useRef<HTMLInputElement>(null);
-
   const [isLoading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [nextURL, setNextURL] = useState("");
   const [albums, setAlbums] = useState<Album[]>([]);
-
-  const { colorMode, toggleColorMode } = useColorMode();
 
   const getURL = async (
     url: string,
@@ -111,28 +94,39 @@ function MainComponent() {
         console.log("Error on getting artist: " + err);
       });
     if (reset) {
+      setSelectedGenres([]);
       setAvailableGenres(
         tempGenres
           .filter((genre, index) => tempGenres.indexOf(genre) === index)
           .sort()
       );
+
       return newAlbums;
     } else {
       const allGenres = [...availableGenres, ...tempGenres];
-      setAvailableGenres(
-        allGenres
+      setAvailableGenres([
+        ...selectedGenres,
+        ...allGenres
           .filter((genre, index) => allGenres.indexOf(genre) === index)
           .sort()
-      );
+          .filter((genre) => !selectedGenres.includes(genre)),
+      ]);
       return [...albums, ...newAlbums];
     }
   };
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
-    if (searchBar.current !== null) {
-      setSearch(searchBar.current.value);
-    }
+  const addGenre = (g: string) => {
+    setAvailableGenres([g, ...availableGenres.filter((genre) => genre !== g)]);
+    setSelectedGenres([...selectedGenres, g]);
+  };
+
+  const removeGenre = (g: string) => {
+    const tempGenres = selectedGenres.filter((genre) => genre !== g);
+    setAvailableGenres([
+      ...tempGenres,
+      ...availableGenres.filter((genre) => !tempGenres.includes(genre)).sort(),
+    ]);
+    setSelectedGenres(tempGenres);
   };
 
   const bgColor = useColorModeValue("#FFFFFF", "#1A202C");
@@ -149,60 +143,13 @@ function MainComponent() {
           pt={"20px"}
           mb={"10px"}
         >
-          <Box pb={"10px"}>
-            <form onSubmit={handleSubmit}>
-              <FormControl display={"flex"} alignItems={"center"}>
-                <Input
-                  placeholder="Search for album..."
-                  size="lg"
-                  mr={"20px"}
-                  id="search"
-                  type="text"
-                  ref={searchBar}
-                />
-                <Switch
-                  size="lg"
-                  isChecked={colorMode === "dark" ? true : false}
-                  onChange={toggleColorMode}
-                />
-              </FormControl>
-            </form>
-          </Box>
-          <Box
-            zIndex={"100000"}
-            bg={bgColor}
-            display={"flex"}
-            alignItems={"center"}
-            justifyItems={"center"}
-            pb={"10px"}
-          >
-            <ScrollContainer vertical={false}>
-              <GenreComponent
-                availableGenres={availableGenres}
-                selectedGenres={selectedGenres}
-                isLoading={isLoading}
-                addGenre={(g: string) => {
-                  setAvailableGenres([
-                    g,
-                    ...availableGenres.filter((genre) => genre !== g),
-                  ]);
-                  setSelectedGenres([...selectedGenres, g]);
-                }}
-                removeGenre={(g: string) => {
-                  const tempGenres = selectedGenres.filter(
-                    (genre) => genre !== g
-                  );
-                  setAvailableGenres([
-                    ...tempGenres,
-                    ...availableGenres
-                      .filter((genre) => !tempGenres.includes(genre))
-                      .sort(),
-                  ]);
-                  setSelectedGenres(tempGenres);
-                }}
-              ></GenreComponent>
-            </ScrollContainer>
-          </Box>
+          <MenuComponent
+            addGenre={addGenre}
+            availableGenres={availableGenres}
+            removeGenre={removeGenre}
+            selectedGenres={selectedGenres}
+            setSearch={setSearch}
+          ></MenuComponent>
         </Box>
         <Box h={"100%"} w={"90%"} pt={"140px"}>
           <AlbumGrid
